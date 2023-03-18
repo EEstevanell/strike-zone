@@ -4,5 +4,4 @@ Lib/
 .idea/
 /pyvenv.cfg
 dataset/
-
 *.pyc
