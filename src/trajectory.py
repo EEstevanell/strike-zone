@@ -343,17 +343,13 @@ class VideoTrajectory:
         for i in range(fframe, len(self.frames)):
             # Draw a point at (x, y) position
             x,y = self.trajectory.predict(i)
-            cv2.circle(image, (int(x), int(y)), 15, (0, 0, 255), -1)
+            cv2.circle(image, (int(x), int(y)), 15, (0, 0, 255), 2)
 
         return image
     
-    def export_trajectory_image(self, initial_frame=None):
+    def export_trajectory_image(self, filename, initial_frame=None):
         image = self.compute_trajectory_image(initial_frame)
-
-        # Display the frame
-        cv2.imshow('frame', image)
-        cv2.waitKey()
-
+        cv2.imwrite(filename, image)
     
     def show_trajectory_image(self, initial_frame=None):
         image = self.compute_trajectory_image(initial_frame)
@@ -361,8 +357,31 @@ class VideoTrajectory:
         # Display the frame
         cv2.imshow('frame', image)
         cv2.waitKey()
+    
+    def compute_trajectory_video(self, filename=None, initial_frame=None):
+        fframe = initial_frame if initial_frame is not None else self.trajectory.get_first_ocurrence_frame()
+        output = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc('M','J','P','G'), 20, self.frame_size) if filename is not None else None
+        new_frames = []
+        data_points = []
+        for fi in range(len(self.frames)):
+            frame = self.frames[fi]
+            if fi >= fframe:
+                x,y = self.trajectory.predict(fi)
+                data_points.append((x,y))
 
+            for dp in data_points:
+                x,y = dp
+                cv2.circle(frame, (int(x), int(y)), 10, (0, 0, 255), 2)
 
-v_trajectory = VideoTrajectory()
-v_trajectory.compute_trajectory(r'D:\Work\UH-IA\Computer Vision\dataset\videos\videos\video3.avi')
-v_trajectory.show_trajectory_image()
+            new_frames.append(frame)
+            if output is not None:
+                output.write(frame)
+            
+        return new_frames
+
+if __name__ == "__main__":
+    v_trajectory = VideoTrajectory()
+    v_trajectory.compute_trajectory(r'D:\Work\UH-IA\Computer Vision\dataset\youtube\1.mp4')
+    # v_trajectory.export_trajectory_image(r'D:\Work\UH-IA\Computer Vision\output\img26.png')
+    v_trajectory.compute_trajectory_video(r'D:\Work\UH-IA\Computer Vision\output\1.avi')
+    
